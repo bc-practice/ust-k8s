@@ -1,0 +1,6 @@
+---
+- name: Instalar cert-manager
+  hosts: localhost
+  become: yes
+  roles:
+      - cert_manager

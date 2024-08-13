@@ -1,0 +1,6 @@
+---
+- name: Instalar kube-prometheus-stack
+  hosts: localhost
+  become: yes
+  roles:
+      - kube_prometheus_stack

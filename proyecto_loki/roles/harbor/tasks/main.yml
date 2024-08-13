@@ -1,0 +1,22 @@
+---
+- name: Asegurarse de que Helm esté instalado
+  command: helm version
+  register: helm_version_output
+  failed_when: helm_version_output.rc != 0
+
+- name: Agregar el repositorio de Grafana a Helm
+  command: helm repo add grafana https://grafana.github.io/helm-charts
+
+- name: Actualizar los repositorios de Helm
+  command: helm repo update
+
+- name: Instalar Loki
+  command: helm install loki grafana/loki-stack \
+      --namespace monitoring \
+      -f values.yaml
+
+- name: Esperar a que Loki esté listo
+  command: kubectl rollout status statefulset/loki-loki-stack-distributor
+  namespace: monitoring
+  retries: 10
+  delay: 10

@@ -1,0 +1,3 @@
+---
+harbor_external_url: 'http://mi-harbor.local' # Sobreescribir valor si es necesario
+# Otras variables que quieras personalizar

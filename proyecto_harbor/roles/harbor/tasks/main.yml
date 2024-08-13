@@ -1,0 +1,22 @@
+---
+- name: Asegurarse de que Helm esté instalado
+  command: helm version
+  register: helm_version_output
+  failed_when: helm_version_output.rc != 0
+
+- name: Agregar el repositorio de Bitnami a Helm
+  command: helm repo add bitnami https://charts.bitnami.com/bitnami
+
+- name: Actualizar los repositorios de Helm
+  command: helm repo update
+
+- name: Instalar Harbor
+  command: helm install harbor bitnami/harbor \
+           --set externalURL={{ harbor_external_url }}  # Usar variable
+           --set persistence.enabled={{ harbor_persistence_enabled }} 
+           --set imagePullSecrets={{ harbor_image_pull_secrets }}
+
+- name: Esperar a que Harbor esté listo
+  command: kubectl rollout status deployment/harbor-core
+  retries: 10
+  delay: 10

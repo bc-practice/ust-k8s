@@ -1,0 +1,29 @@
+---
+- name: Asegurarse de que Helm esté instalado
+  command: helm version
+  register: helm_version_output
+  failed_when: helm_version_output.rc != 0
+
+- name: Agregar el repositorio de Prometheus Community a Helm
+  command: helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+- name: Actualizar los repositorios de Helm
+  command: helm repo update
+
+- name: Instalar kube-prometheus-stack
+  command:
+      helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+      --namespace monitoring \
+      -f values.yaml # Si tienes un archivo de valores personalizado
+
+- name: Esperar a que Prometheus esté listo
+  command: kubectl rollout status statefulset/prometheus-kube-prometheus-stack-prometheus
+  namespace: monitoring
+  retries: 10
+  delay: 10
+
+- name: Esperar a que Grafana esté listo
+  command: kubectl rollout status deployment/grafana-kube-prometheus-stack-grafana
+  namespace: monitoring
+  retries: 10
+  delay: 10

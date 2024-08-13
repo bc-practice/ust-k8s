@@ -1,0 +1,6 @@
+---
+- name: Instalar Loki
+  hosts: localhost
+  become: yes
+  roles:
+      - loki

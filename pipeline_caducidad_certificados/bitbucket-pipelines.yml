@@ -1,0 +1,27 @@
+pipelines:
+    default:
+        - step:
+              name: Verificar certificados de Kubernetes
+              image:
+                  name: alpine:latest
+              script:
+                  - apk add --update --no-cache python3 py3-pip
+                  - pip3 install ansible
+                  - pipe: atlassian/ssh-run:0.2.3
+                    variables:
+                        SSH_USER: $SSH_USER
+                        SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+                        REMOTE_HOSTNAME: $CLUSTER1_HOST
+                        COMMAND: 'ansible-playbook -i ansible/hosts.ini ansible/playbook_certificados.yml'
+
+                  - pipe: atlassian/ssh-run:0.2.3
+                    variables:
+                        SSH_USER: $SSH_USER
+                        SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+                        REMOTE_HOSTNAME: $CLUSTER2_HOST
+                        COMMAND: 'ansible-playbook -i ansible/hosts.ini ansible/playbook_certificados.yml'
+
+    schedules:
+        - cron: '0 2 * * 6' # Ejecutar todos los sábados a las 2 AM UTC
+          branches:
+              - master # O la rama que desees monitorear

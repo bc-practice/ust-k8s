@@ -1,0 +1,30 @@
+---
+- name: Verificar certificados de Ingress en Kubernetes
+  hosts: kubernetes
+  gather_facts: false
+
+  tasks:
+      - name: Obtener información de los Ingress
+        shell: kubectl get ingress -A -o json
+        register: ingress_info
+
+      - name: Verificar fechas de expiración de los certificados
+        set_fact:
+            certificados_a_expirar: []
+        loop: "{{ ingress_info.stdout | from_json | json_query('items[*].spec.tls[*].secretName') | flatten }}"
+        vars:
+            secret_info: "{{ lookup('k8s_info', api_version='v1', kind='Secret', namespace=item.namespace, name=item.value, kubeconfig='~/.kube/config') }}"
+            certificado: "{{ secret_info.data['tls.crt'] | b64decode }}"
+            fecha_expiracion: "{{ openssl_certificate_info(certificado)['not_after'] }}"
+            dias_para_expirar: '{{ ((fecha_expiracion | to_datetime) - ansible_date_time.date).days }}'
+        when: secret_info is defined
+
+        block:
+            - name: Agregar certificado a la lista si expira pronto
+              set_fact:
+                  certificados_a_expirar: "{{ certificados_a_expirar + [ {'secret': item.value, 'namespace': item.namespace, 'dias_para_expirar': dias_para_expirar } ] }}"
+              when: dias_para_expirar < 90
+
+      - name: Mostrar certificados que expirarán pronto
+        debug:
+            msg: '{{ certificados_a_expirar }}'

@@ -1,0 +1,6 @@
+---
+- name: Instalar Harbor
+  hosts: localhost
+  become: yes
+  roles:
+      - harbor

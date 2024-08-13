@@ -1,0 +1,4 @@
+---
+harbor_external_url: 'http://localhost' # Valor por defecto
+harbor_persistence_enabled: false # Valor por defecto
+harbor_image_pull_secrets: '' # Valor por defecto (sin secretos)

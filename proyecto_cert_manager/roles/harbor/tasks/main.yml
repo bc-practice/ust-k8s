@@ -1,0 +1,26 @@
+---
+- name: Asegurarse de que Helm esté instalado
+  command: helm version
+  register: helm_version_output
+  failed_when: helm_version_output.rc != 0
+
+- name: Agregar el repositorio de Jetstack a Helm
+  command: helm repo add jetstack https://charts.jetstack.io
+
+- name: Actualizar los repositorios de Helm
+  command: helm repo update
+
+- name: Instalar cert-manager (con CRDs)
+  command: helm install \
+      cert-manager jetstack/cert-manager \
+      --namespace cert-manager \
+      --create-namespace \
+      --version v1.12.0 \
+      --set installCRDs=true \
+      -f values.yaml # Si tienes un archivo de valores personalizado
+
+- name: Esperar a que cert-manager esté listo
+  command: kubectl rollout status deployment/cert-manager-webhook
+  namespace: cert-manager
+  retries: 10
+  delay: 10
