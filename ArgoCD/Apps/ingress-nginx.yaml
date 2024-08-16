@@ -1,21 +1,21 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-    name: loki
+    name: ingress-nginx
     namespace: argocd
 spec:
     project: default
     source:
-        repoURL: registry-1.docker.io/bitnamicharts
-        targetRevision: 23.0.0
+        repoURL: https://kubernetes.github.io/ingress-nginx
+        targetRevision: 4.11.1
         helm:
             parameters:
-                - name: service.type
+                - name: controller.service.type
                   value: NodePort
-        chart: harbor
+        chart: ingress-nginx
     destination:
         server: https://kubernetes.default.svc
-        namespace: harbor
+        namespace: ingress-nginx
     syncPolicy:
         syncOptions:
             - CreateNamespace=true
